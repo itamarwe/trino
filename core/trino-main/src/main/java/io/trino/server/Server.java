@@ -95,8 +95,10 @@ public class Server
         modules.add(
                 new NodeModule(),
                 new HttpServerModule(),
+                new HttpServerModule(Internal.class, "internal"),
                 new JsonModule(),
                 new JaxrsModule(),
+                new JaxrsModule(Internal.class),
                 new MBeanModule(),
                 new PrefixObjectNameGeneratorModule("io.trino"),
                 new JmxModule(),

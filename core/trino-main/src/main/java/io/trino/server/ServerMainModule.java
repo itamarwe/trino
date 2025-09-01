@@ -24,6 +24,7 @@ import io.airlift.concurrent.BoundedExecutor;
 import io.airlift.configuration.AbstractConfigurationAwareModule;
 import io.airlift.http.server.HttpServerConfig;
 import io.airlift.http.server.HttpServerInfo;
+import io.airlift.http.server.HttpsConfig;
 import io.airlift.node.NodeInfo;
 import io.airlift.slice.Slice;
 import io.airlift.stats.GcMonitor;
@@ -32,6 +33,7 @@ import io.airlift.stats.PauseMeter;
 import io.airlift.units.DataSize;
 import io.airlift.units.Duration;
 import io.trino.FeaturesConfig;
+import io.trino.InternalResource;
 import io.trino.SystemSessionProperties;
 import io.trino.SystemSessionPropertiesProvider;
 import io.trino.block.BlockJsonSerde;
@@ -204,6 +206,19 @@ public class ServerMainModule
             httpServerConfig.setHttp2MaxConcurrentStreams(32 * 1024); // from the default 16K
         });
 
+        configBinder(binder).bindConfigDefaults(HttpServerConfig.class, Internal.class, httpServerConfig -> {
+            httpServerConfig.setHttpEnabled(false);
+            httpServerConfig.setHttpsEnabled(true);
+        });
+
+        configBinder(binder).bindConfigDefaults(HttpsConfig.class, Internal.class, httpServerConfig -> {
+            httpServerConfig.setAutomaticHttpsSharedSecret("secret");
+            httpServerConfig.setHttpsPort(0);
+        });
+
+        // Conditional module doesn't work with config defaults
+        configBinder(binder).bindConfig(HttpsConfig.class, Internal.class);
+
         binder.bind(PreparedStatementEncoder.class).in(Scopes.SINGLETON);
         binder.bind(HttpRequestSessionContextFactory.class).in(Scopes.SINGLETON);
         install(new InternalCommunicationModule());
@@ -224,6 +239,10 @@ public class ServerMainModule
 
         jaxrsBinder(binder).bind(ThrowableMapper.class);
         jaxrsBinder(binder).bind(DisableHttpCacheDynamicFeature.class);
+
+        jaxrsBinder(binder, Internal.class).bind(InternalResource.class);
+        jaxrsBinder(binder, Internal.class).bind(DisableHttpCacheDynamicFeature.class);
+        jaxrsBinder(binder, Internal.class).bind(ThrowableMapper.class);
 
         configBinder(binder).bindConfig(SqlEnvironmentConfig.class);
 
