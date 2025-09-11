@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 final class TestIcebergBigLakeMetastoreConnectorSmokeTest
         extends BaseIcebergConnectorSmokeTest
 {
-    private static final String GCP_STORAGE_BUCKET = requireEnv("GCP_STORAGE_BUCKET");
+    private static final String GCP_STORAGE_BUCKET = "trino-ci-test-us-east1";
     private static final String GCP_CREDENTIALS_KEY = requireEnv("GCP_CREDENTIALS_KEY");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProvider().get();
 
